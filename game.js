@@ -125,7 +125,16 @@ muteToggleBtn.onclick = () => {
 };
 
 howToPlayBtn.onclick = () => document.getElementById("howToPlayModal").style.display = "flex";
-closeModalBtn.onclick = () => document.getElementById("howToPlayModal").style.display = "none";
+closeModalBtn.onclick = () => {
+  const modal = document.getElementById("howToPlayModal");
+  modal.style.display = "none";
+
+  // only on mobile portrait
+  if (window.matchMedia("(max-width: 768px) and (orientation: portrait)").matches) {
+    const rot = document.getElementById("rotateMessage");
+    rot.classList.add("show");
+  }
+};
 
 window.addEventListener("load", () => {
   // restore theme
