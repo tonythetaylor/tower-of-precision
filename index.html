@@ -487,6 +487,19 @@
     padding: 0 !important;
   }
 }
+
+@media screen and (orientation: landscape) {
+  html, body {
+    overflow: hidden !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+
+    /* for browsers that support it */
+    overscroll-behavior: none !important;
+    overscroll-behavior-y: none !important;
+  }
+}     
     </style>
   </head>
   <body>

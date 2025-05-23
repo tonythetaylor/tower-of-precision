@@ -31,6 +31,21 @@ function init() {
   Object.values(towers).forEach(t => t.addEventListener("click", towerTap));
 }
 
+function disableIOSPullToRefresh() {
+  let startY = 0;
+  document.addEventListener("touchstart", function(e) {
+    if (e.touches.length !== 1) return;
+    startY = e.touches[0].clientY;
+  }, { passive: false });
+
+  document.addEventListener("touchmove", function(e) {
+    // if at very top AND swiping down, preventDefault
+    if (window.pageYOffset === 0 && e.touches[0].clientY > startY) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+}
+
 function pickUp(disc) {
   // only top disc
   if (disc !== getTopDisc(disc.parentElement)) return;
@@ -141,6 +156,7 @@ window.addEventListener("load", () => {
   const saved = localStorage.getItem("theme") || "dark";
   document.body.classList.add(saved);
   themeToggleBtn.textContent = saved === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode";
+  disableIOSPullToRefresh();
   init();
   // don't auto-open modal
 });
