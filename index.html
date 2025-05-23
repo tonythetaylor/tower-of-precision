@@ -1,329 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <link rel="manifest" href="manifest.json" />
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tower of Precision - Drag & Drop</title>
-    <style>
-      /* disable text-selection & touches everywhere */
-      html,
-      body,
-      .tower,
-      .disc,
-      .top-controls button,
-      .modal-content {
-        user-select: none;
-        -webkit-user-select: none;
-        touch-action: manipulation;
-      }
+<head>
+  <link rel="manifest" href="manifest.json" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tower of Precision - Drag & Drop</title>
+  <style>
+    /* Disable text selection & default touch actions */
+    html, body, .tower, .disc, .top-controls button, .modal-content {
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      margin: 0; padding: 0;
+    }
 
-      /* rotate overlay */
-      .rotate-message {
-        position: fixed;
-        inset: 0;
-        background: #000;
-        color: #fff;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        font-size: 1.2rem;
-        padding: 1rem;
-        z-index: 10000;
-      }
+    /* Wrapper for centering on mobile */
+    .app {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+    }
 
-      /* portrait: show overlay, hide game */
-      @media screen and (orientation: portrait) {
-        .game,
-        .info,
-        .top-controls {
-          display: none;
-        }
-        .rotate-message {
-          display: flex;
-        }
-      }
+    /* Mobile portrait: show rotate overlay, hide game UI */
+    @media screen and (max-width: 768px) and (orientation: portrait) {
+      .app { display: none; }
+      .rotate-message { display: flex; }
+    }
 
-      /* landscape: no scrolling, show & center game */
-      @media screen and (orientation: landscape) {
-        html,
-        body {
-          overflow: hidden;
-          height: 100vh;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-        }
-        .rotate-message {
-          display: none;
-        }
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        font-family: "Segoe UI", sans-serif;
-        background-color: #3b3b43;
-        color: #f0f0f0;
-        margin: 0;
-        padding: 0;
-        text-align: center;
-      }
-      body.light {
-        background-color: #f4f4f4;
-        color: #222;
-      }
-      body.dark {
-        background-color: #1e1e2f;
-        color: #f0f0f0;
-      }
-
-      /* controls */
-      .top-controls {
-        margin-top: 20px;
-        display: flex;
-        justify-content: center;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-      .top-controls button {
-        background-color: #3b82f6;
-        color: white;
-        font-size: 0.95rem;
-        padding: 8px 16px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-      }
-      .top-controls button:hover {
-        background-color: #2563eb;
-      }
-
-      /* game layout */
-      .game {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        max-width: 100%;
-        padding: 0 5%;
-        margin-top: 40px;
-        gap: 10px;
-      }
-
-      .tower {
-        position: relative;
-        flex: 1 1 0;
-        height: 300px;
-        background: #2c2c36;
-        border: 3px solid #444;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
-        display: flex;
-        flex-direction: column-reverse;
-        align-items: center;
-        padding-bottom: 10px;
-        transition: transform 0.2s ease;
-        max-width: 33%;
-      }
-      .tower:hover {
-        transform: scale(1.02);
-      }
-
-      /* tower labels */
-      .tower::before {
-        content: attr(id);
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 72px;
-        font-weight: bold;
-        pointer-events: none;
-        z-index: 0;
-        opacity: 0.15;
-        transition: opacity 0.3s ease, color 0.3s ease;
-      }
-      body.light .tower::before {
-        color: rgba(0, 0, 0, 0.2);
-      }
-      body.dark .tower::before {
-        color: rgba(255, 255, 255, 0.2);
-      }
-      .tower:hover::before {
-        opacity: 0.3;
-      }
-
-      /* discs */
-      .disc {
-        height: 24px;
-        margin: 6px 0;
-        border-radius: 8px;
-        cursor: grab;
-        background: linear-gradient(to right, #3498db, #2980b9);
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-        transition: transform 0.2s ease;
-      }
-      .disc:hover {
-        transform: scale(1.05);
-      }
-      .disc:active {
-        cursor: grabbing;
-      }
-      .disc[data-size="1"] {
-        width: 35%;
-        background: linear-gradient(to right, #e74c3c, #c0392b);
-      }
-      .disc[data-size="2"] {
-        width: 50%;
-        background: linear-gradient(to right, #f39c12, #d35400);
-      }
-      .disc[data-size="3"] {
-        width: 65%;
-        background: linear-gradient(to right, #f1c40f, #f39c12);
-      }
-      .disc[data-size="4"] {
-        width: 80%;
-        background: linear-gradient(to right, #2ecc71, #27ae60);
-      }
-      .disc[data-size="5"] {
-        width: 95%;
-        background: linear-gradient(to right, #3498db, #2980b9);
-      }
-
-      /* info & status */
-      .info {
-        margin: 30px 20px;
-        font-size: 1.2rem;
-      }
-      #status {
-        font-size: 1.4rem;
-        margin-top: 10px;
-        color: #27ae60;
-        font-weight: bold;
-      }
-
-      /* modal */
-      .modal {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.75);
+    /* Mobile landscape: center app, hide overlay */
+    @media screen and (max-width: 768px) and (orientation: landscape) {
+      html, body {
+        height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 20px;
-        z-index: 9999;
+        overflow: hidden;
       }
-      .modal-content {
-        background: #2c2c3a;
-        color: #f0f0f0;
-        padding: 30px;
-        border-radius: 12px;
-        max-width: 400px;
-        width: 100%;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        text-align: left;
-        transition: background 0.3s ease, color 0.3s ease;
-      }
-      body.light .modal-content {
-        background: #ffffff;
-        color: #222222;
-      }
-      .modal-content h2 {
-        margin-top: 0;
-        font-size: 1.8rem;
-        margin-bottom: 0.5em;
-      }
-      .modal-content h3 {
-        margin-bottom: 0.4em;
-        font-size: 1.2rem;
-      }
-      .modal-content p {
-        line-height: 1.5;
-        margin: 0.8em 0;
-      }
-      .modal-content ul {
-        list-style: none;
-        padding-left: 1.2em;
-        margin: 0.8em 0;
-      }
-      .modal-content ul li {
-        margin-bottom: 0.4em;
-        line-height: 1.4;
-        position: relative;
-        padding-left: 0.5em;
-      }
-      .modal-content ul li::before {
-        content: "–\00a0";
-      }
-      .modal-content button {
-        display: block;
-        margin: 1.5em auto 0 auto;
-        background-color: #6366f1;
-        color: #ffffff;
-        border: none;
-        padding: 0.75em 1.5em;
-        font-size: 1rem;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background 0.3s ease;
-      }
-      body.light .modal-content button {
-        background-color: #3b82f6;
-        color: #ffffff;
-      }
-      .modal-content button:hover {
-        background-color: #4f46e5;
-      }
+      .app { display: block; }
+      .rotate-message { display: none; }
+    }
 
-      #howToPlayButton {
-        margin-top: 20px;
-        background-color: #6366f1;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        font-size: 1rem;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-      }
-      #howToPlayButton:hover {
-        background-color: #4f46e5;
-      }
+    /* Rotate overlay style */
+    .rotate-message {
+      position: fixed; inset: 0;
+      background: #000;
+      color: #fff;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 1.2rem;
+      padding: 1rem;
+      z-index: 10000;
+    }
 
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: scale(0.95);
-        }
-        to {
-          opacity: 1;
-          transform: scale(1);
-        }
-      }
-      @media screen and (max-width: 600px) {
-        h1 {
-          font-size: 1.6rem;
-        }
-        .tower {
-          height: 260px;
-        }
-        .disc {
-          height: 20px;
-        }
-      }
-    </style>
-  </head>
-  <body class="dark">
-    <div class="rotate-message">
-      Please rotate your device<br /><strong>to landscape</strong> to play.
-    </div>
+    /* Base styles */
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: #3b3b43;
+      color: #f0f0f0;
+      text-align: center;
+    }
+    body.light { background-color: #f4f4f4; color: #222; }
+    body.dark  { background-color: #1e1e2f; color: #f0f0f0; }
 
+    /* Control buttons unified */
+    .top-controls {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .top-controls button {
+      background-color: #3b82f6;
+      color: white;
+      font-size: 0.95rem;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .top-controls button:hover { background-color: #2563eb; }
+
+    /* Game layout */
+    .game {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 0 5%;
+      margin-top: 40px;
+      gap: 10px;
+    }
+    .tower {
+      position: relative;
+      flex: 1 1 0;
+      height: 300px;
+      background: #2c2c36;
+      border: 3px solid #444;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      padding-bottom: 10px;
+      transition: transform 0.2s ease;
+      max-width: 33%;
+    }
+    .tower:hover { transform: scale(1.02); }
+    .tower::before {
+      content: attr(id);
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 72px;
+      font-weight: bold;
+      pointer-events: none;
+      opacity: 0.15;
+      transition: opacity 0.3s ease, color 0.3s ease;
+    }
+    body.light .tower::before { color: rgba(0,0,0,0.2); }
+    body.dark  .tower::before { color: rgba(255,255,255,0.2); }
+    .tower:hover::before { opacity: 0.3; }
+
+    /* Discs */
+    .disc {
+      height: 24px; margin: 6px 0;
+      border-radius: 8px; cursor: grab;
+      background: linear-gradient(to right,#3498db,#2980b9);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease;
+    }
+    .disc:hover { transform: scale(1.05); }
+    .disc:active { cursor: grabbing; }
+    .disc[data-size="1"] { width:35%; background:linear-gradient(to right,#e74c3c,#c0392b); }
+    .disc[data-size="2"] { width:50%; background:linear-gradient(to right,#f39c12,#d35400); }
+    .disc[data-size="3"] { width:65%; background:linear-gradient(to right,#f1c40f,#f39c12); }
+    .disc[data-size="4"] { width:80%; background:linear-gradient(to right,#2ecc71,#27ae60); }
+    .disc[data-size="5"] { width:95%; background:linear-gradient(to right,#3498db,#2980b9); }
+
+    /* Info & status */
+    .info { margin: 30px 20px; font-size: 1.2rem; }
+    #status { font-size: 1.4rem; margin-top: 10px; color: #27ae60; font-weight: bold; }
+
+    /* Modal */
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 9999; }
+    .modal-content { background: #2c2c3a; color: #f0f0f0; padding: 30px; border-radius: 12px; max-width: 400px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: left; transition: background 0.3s ease, color 0.3s ease; }
+    body.light .modal-content { background: #fff; color: #222; }
+    .modal-content h2 { margin-top:0; font-size:1.8rem; margin-bottom:0.5em; }
+    .modal-content h3 { margin-bottom:0.4em; font-size:1.2rem; }
+    .modal-content p { line-height:1.5; margin:0.8em 0; }
+    .modal-content ul { list-style:none; padding-left:1.2em; margin:0.8em 0; }
+    .modal-content ul li { margin-bottom:0.4em; line-height:1.4; position:relative; padding-left:0.5em; }
+    .modal-content ul li::before { content:"–\00a0"; }
+    .modal-content button { display:block; margin:1.5em auto 0; background:#6366f1; color:#fff; border:none; padding:0.75em 1.5em; font-size:1rem; border-radius:8px; cursor:pointer; transition:background 0.3s ease; }
+    body.light .modal-content button { background:#3b82f6; }
+    .modal-content button:hover { background:#4f46e5; }
+
+    /* Fade animation */
+    @keyframes fadeIn { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
+    @media screen and (max-width:600px) { h1 { font-size:1.6rem; } .tower { height:260px; } .disc { height:20px; } }
+  </style>
+</head>
+<body class="dark">
+  <div class="rotate-message">
+    Please rotate your device<br><strong>to landscape</strong> to play.
+  </div>
+
+  <div class="app">
     <h1>Tower of Precision</h1>
-    <p>Drag and drop the discs to move them from Tower A to Tower C</p>
+    <p>Drag & drop the discs from Tower A to Tower C</p>
 
     <div class="top-controls">
       <button id="themeToggle">🌙 Dark Mode</button>
@@ -333,24 +181,9 @@
     </div>
 
     <div class="game">
-      <div
-        class="tower"
-        id="A"
-        ondragover="allowDrop(event)"
-        ondrop="drop(event)"
-      ></div>
-      <div
-        class="tower"
-        id="B"
-        ondragover="allowDrop(event)"
-        ondrop="drop(event)"
-      ></div>
-      <div
-        class="tower"
-        id="C"
-        ondragover="allowDrop(event)"
-        ondrop="drop(event)"
-      ></div>
+      <div class="tower" id="A" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+      <div class="tower" id="B" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+      <div class="tower" id="C" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
     </div>
 
     <div class="info">
@@ -358,17 +191,10 @@
       <p id="status"></p>
     </div>
 
-    <audio id="dropSound" src="drop.wav" preload="auto"></audio>
-    <audio id="invalidSound" src="invalid.wav" preload="auto"></audio>
-    <audio id="winSound" src="win.wav" preload="auto"></audio>
-
-    <div id="howToPlayModal" class="modal">
+    <div id="howToPlayModal" class="modal" style="display:none">
       <div class="modal-content">
         <h2>How to Play</h2>
-        <p>
-          <strong>Goal:</strong> Move all the discs from the left tower to the
-          right tower.
-        </p>
+        <p><strong>Goal:</strong> Move all the discs from the left tower to the right tower.</p>
         <h3>Rules:</h3>
         <ul>
           <li>Only one disc can be moved at a time.</li>
@@ -380,11 +206,16 @@
       </div>
     </div>
 
-    <script>
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("./service-worker.js");
-      }
-    </script>
-    <script src="game.js"></script>
-  </body>
+    <audio id="dropSound" src="drop.wav" preload="auto"></audio>
+    <audio id="invalidSound" src="invalid.wav" preload="auto"></audio>
+    <audio id="winSound" src="win.wav" preload="auto"></audio>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js');
+    }
+  </script>
+  <script src="game.js"></script>
+</body>
 </html>
