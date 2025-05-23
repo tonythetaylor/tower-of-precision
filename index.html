@@ -449,32 +449,42 @@
       }
 
       @media screen and (orientation: landscape) {
-  /* hide the page title and intro text */
-  h1,
-  body > p:first-of-type {
-    display: none !important;
-  }
-}
+        /* hide the page title and intro text */
+        h1,
+        body > p:first-of-type {
+          display: none !important;
+        }
+      }
 
-/* overlay *inside* .game only */
-.game .rotate-message {
-  position: absolute;
-  inset: 0;               /* fill the .game box */
-  display: none;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  background: rgba(0,0,0,0.85);
-  color: #fff;
-  font-size: 1.2rem;
-  z-index: 10;            /* above towers but below global controls */
-  pointer-events: none;   /* let clicks through to buttons underneath */
-}
+      /* overlay *inside* .game only */
+      .game .rotate-message {
+        position: absolute;
+        inset: 0; /* fill the .game box */
+        display: none;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background: rgba(0, 0, 0, 0.85);
+        color: #fff;
+        font-size: 1.2rem;
+        z-index: 10; /* above towers but below global controls */
+        pointer-events: none; /* let clicks through to buttons underneath */
+      }
 
-/* only show inside mobile portrait */
-@media screen and (max-width: 768px) and (orientation: portrait) {
-  .game .rotate-message.show {
-    display: flex;
+      /* only show inside mobile portrait */
+      @media screen and (max-width: 768px) and (orientation: portrait) {
+        .game .rotate-message.show {
+          display: flex;
+        }
+      }
+
+      @media screen and (orientation: landscape) {
+  html,
+  body {
+    overflow: hidden !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 }
     </style>
@@ -489,10 +499,10 @@
       <button id="howToPlayButton">❓ How to Play</button>
     </div>
     <div class="game">
-        <!-- rotate prompt now lives inside .game -->
-  <div id="rotateMessage" class="rotate-message">
-    Please rotate your device to landscape to play.
-  </div>
+      <!-- rotate prompt now lives inside .game -->
+      <div id="rotateMessage" class="rotate-message">
+        Please rotate your device to landscape to play.
+      </div>
       <div
         class="tower"
         id="A"
