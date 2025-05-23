@@ -123,6 +123,7 @@ const muteToggleBtn = document.getElementById("muteToggle");
 const resetBtn = document.getElementById("resetButton");
 const howToPlayBtn = document.getElementById("howToPlayButton");
 const closeModalBtn = document.getElementById("closeModal");
+const rotateMessage = document.getElementById("rotateMessage");
 
 resetBtn.onclick = init;
 
@@ -150,6 +151,12 @@ closeModalBtn.onclick = () => {
     rot.classList.add("show");
   }
 };
+
+window.addEventListener("orientationchange", () => {
+  if (window.matchMedia("(orientation: landscape)").matches) {
+    rotateMessage.classList.remove("show");
+  }
+});
 
 window.addEventListener("load", () => {
   // restore theme
