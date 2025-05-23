@@ -6,20 +6,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tower of Precision - Drag & Drop</title>
     <style>
-      /* at the very top of your <style> */
-html, body, .tower, .disc, .top-controls button, .modal-content {
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
-  touch-action: manipulation;
-}
+      /* disable text-selection & touches everywhere */
+      html, body, .tower, .disc, .top-controls button, .modal-content {
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+      }
 
-/* highlight the tapped disc */
-.disc.selected {
-  outline: 3px solid #3b82f6;
-  transform: scale(1.1);
-  transition: transform 0.1s, outline 0.1s;
-}
+      /* rotate overlay */
+      .rotate-message {
+        position: fixed;
+        inset: 0;
+        background: #000;
+        color: #fff;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-size: 1.2rem;
+        padding: 1rem;
+        z-index: 10000;
+      }
+
+      /* portrait: show overlay, hide game */
+      @media screen and (orientation: portrait) {
+        .game, .info, .top-controls { display: none; }
+        .rotate-message { display: flex; }
+      }
+
+      /* landscape: no scrolling, show game */
+      @media screen and (orientation: landscape) {
+        html, body { overflow: hidden; height: 100vh; }
+        .rotate-message { display: none; }
+      }
 
       * {
         box-sizing: border-box;
@@ -92,6 +111,29 @@ html, body, .tower, .disc, .top-controls button, .modal-content {
         color: #d0d0d0;
       }
 
+      .top-controls {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .top-controls button {
+        background-color: #3b82f6;
+        color: white;
+        font-size: 0.95rem;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .top-controls button:hover {
+        background-color: #2563eb;
+      }
+
       .game {
         display: flex;
         justify-content: space-between;
@@ -133,7 +175,7 @@ html, body, .tower, .disc, .top-controls button, .modal-content {
         font-weight: bold;
         pointer-events: none;
         z-index: 0;
-        opacity: 0.15; /* increased from 0.05 */
+        opacity: 0.15;
         transition: opacity 0.3s ease, color 0.3s ease;
       }
 
@@ -239,30 +281,6 @@ html, body, .tower, .disc, .top-controls button, .modal-content {
         background-color: #4b5563;
       }
 
-      .top-controls {
-        margin-top: 20px;
-        display: flex;
-        justify-content: center;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-
-      .top-controls button {
-        background-color: #3b82f6;
-        color: white;
-        font-size: 0.95rem;
-        padding: 8px 16px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-      }
-
-      .top-controls button:hover {
-        background-color: #2563eb;
-      }
-
-      /* Modal backdrop */
       .modal {
         position: fixed;
         inset: 0;
@@ -274,7 +292,6 @@ html, body, .tower, .disc, .top-controls button, .modal-content {
         z-index: 9999;
       }
 
-      /* Modal box */
       .modal-content {
         background: #2c2c3a;
         color: #f0f0f0;
@@ -287,7 +304,6 @@ html, body, .tower, .disc, .top-controls button, .modal-content {
         transition: background 0.3s ease, color 0.3s ease;
       }
 
-      /* Light-mode overrides */
       body.light .modal-content {
         background: #ffffff;
         color: #222222;
@@ -314,15 +330,17 @@ html, body, .tower, .disc, .top-controls button, .modal-content {
         padding-left: 1.2em;
         margin: 0.8em 0;
       }
+
       .modal-content ul li {
         margin-bottom: 0.4em;
         line-height: 1.4;
         position: relative;
         padding-left: 0.5em;
       }
+
       .modal-content ul li::before {
-  content: "–\00a0";
-}
+        content: "–\00a0";
+      }
 
       .modal-content button {
         display: block;
@@ -336,10 +354,12 @@ html, body, .tower, .disc, .top-controls button, .modal-content {
         cursor: pointer;
         transition: background 0.3s ease;
       }
+
       body.light .modal-content button {
         background-color: #3b82f6;
         color: #ffffff;
       }
+
       .modal-content button:hover {
         background-color: #4f46e5;
       }
@@ -386,34 +406,25 @@ html, body, .tower, .disc, .top-controls button, .modal-content {
       }
     </style>
   </head>
-  <body>
+  <body class="dark">
+    <div class="rotate-message">
+      Please rotate your device<br /><strong>to landscape</strong> to play.
+    </div>
+
     <h1>Tower of Precision</h1>
     <p>Drag and drop the discs to move them from Tower A to Tower C</p>
+
     <div class="top-controls">
       <button id="themeToggle">🌙 Dark Mode</button>
       <button id="muteToggle">🔊 Sound On</button>
       <button id="resetButton">Reset Game</button>
       <button id="howToPlayButton">❓ How to Play</button>
     </div>
+
     <div class="game">
-      <div
-        class="tower"
-        id="A"
-        ondragover="allowDrop(event)"
-        ondrop="drop(event)"
-      ></div>
-      <div
-        class="tower"
-        id="B"
-        ondragover="allowDrop(event)"
-        ondrop="drop(event)"
-      ></div>
-      <div
-        class="tower"
-        id="C"
-        ondragover="allowDrop(event)"
-        ondrop="drop(event)"
-      ></div>
+      <div class="tower" id="A" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+      <div class="tower" id="B" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+      <div class="tower" id="C" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
     </div>
 
     <div class="info">
@@ -429,10 +440,7 @@ html, body, .tower, .disc, .top-controls button, .modal-content {
     <div id="howToPlayModal" class="modal">
       <div class="modal-content">
         <h2>How to Play</h2>
-        <p>
-          <strong>Goal:</strong> Move all the discs from the left tower to the
-          right tower.
-        </p>
+        <p><strong>Goal:</strong> Move all the discs from the left tower to the right tower.</p>
         <h3>Rules:</h3>
         <ul>
           <li>Only one disc can be moved at a time.</li>
@@ -445,11 +453,10 @@ html, body, .tower, .disc, .top-controls button, .modal-content {
     </div>
 
     <script>
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.register('./service-worker.js');
-        }
-      </script>
-      
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./service-worker.js');
+      }
+    </script>
     <script src="game.js"></script>
   </body>
 </html>
