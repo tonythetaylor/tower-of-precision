@@ -10,7 +10,7 @@ export default function Controls({ theme, setTheme, muted, setMuted, onReset, on
         {muted ? '🔇 Sound Off' : '🔊 Sound On'}
       </button>
       <button onClick={onReset} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500">
-        🔄 Reset Game
+        Reset Game
       </button>
       <button onClick={onShowHelp} className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-500">
         ❓ How to Play
