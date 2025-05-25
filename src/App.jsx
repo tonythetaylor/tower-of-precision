@@ -12,12 +12,12 @@ export default function App() {
   const [muted, setMuted] = useState(false);
   const [showHelp, setShowHelp] = useState(true);
   const [feedback, setFeedback] = useState("");
-  // control visibility in landscape
   const [controlsVisible, setControlsVisible] = useState(false);
 
-  // Toggle the `dark` class on <html>
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
+    // Prevent overscroll bounce on mobile
+    document.documentElement.style.overscrollBehavior = "none";
   }, [theme]);
 
   const play = (id) => {
@@ -55,9 +55,7 @@ export default function App() {
   };
 
   return (
-    <div className="bg-gray-100 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100 transition-colors
-                     landscape:flex landscape:flex-col landscape:justify-center landscape:items-center">
-
+    <div className="bg-gray-100 dark:bg-gray-900 h-screen overflow-hidden text-gray-900 dark:text-gray-100 transition-colors landscape:flex landscape:flex-col landscape:justify-center landscape:items-center">
       {/* Toggle button in landscape only */}
       <button
         onClick={() => setControlsVisible((v) => !v)}
@@ -92,7 +90,7 @@ export default function App() {
       {/* How to Play modal */}
       {showHelp && <HowToPlayModal onClose={() => setShowHelp(false)} />}
 
-      {/* Three towers, centered even in landscape */}
+      {/* Three towers, always centered */}
       <main className="w-full px-4 mt-8 flex flex-row items-end justify-center gap-x-8">
         {['A','B','C'].map((t) => (
           <Tower key={t} name={t} discs={towers[t]} onDrop={handleMove} />
