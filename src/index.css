@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, .tower, .disc {
+    overscroll-behavior: none;
+    touch-action: manipulation;
+  }
+
+  /* optional: no text-selection on long-press */
+* {
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
