@@ -12,23 +12,35 @@ export default function App() {
   const [muted, setMuted] = useState(false);
   const [showHelp, setShowHelp] = useState(true);
   const [feedback, setFeedback] = useState("");
-  const [controlsVisible, setControlsVisible] = useState(false);
 
-  // Initialize theme from localStorage
+  // Option 2: scroll to hide mobile chrome
   useEffect(() => {
-    const saved = localStorage.getItem('theme');
-    if (saved === 'light' || saved === 'dark') {
-      setTheme(saved);
-    }
+    const hideAddressBar = () => window.scrollTo(0, 1);
+    setTimeout(hideAddressBar, 200);
+    window.addEventListener("orientationchange", hideAddressBar);
+    return () => window.removeEventListener("orientationchange", hideAddressBar);
   }, []);
 
-  // Apply theme class to <html>
+  // load / save theme
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    if (saved === "light" || saved === "dark") setTheme(saved);
+  }, []);
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.remove('light', 'dark');
+    root.classList.remove("light", "dark");
     root.classList.add(theme);
-    localStorage.setItem('theme', theme);
+    localStorage.setItem("theme", theme);
   }, [theme]);
+
+  // cross-browser fullscreen
+  function goFullscreen() {
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+    else if (el.msRequestFullscreen) el.msRequestFullscreen();
+  }
 
   const play = (id) => {
     if (!muted) {
@@ -51,7 +63,7 @@ export default function App() {
       src.pop();
       dst.push(size);
       setTowers({ ...towers, [from]: src, [to]: dst });
-      setMoves(m => m + 1);
+      setMoves((m) => m + 1);
       play("drop");
       setFeedback("");
       if (to === "C" && dst.length === INITIAL.length) {
@@ -59,52 +71,72 @@ export default function App() {
         play("win");
       }
     } else {
-      setFeedback('❌ Invalid move!');
+      setFeedback("❌ Invalid move!");
       play("invalid");
     }
   };
 
   return (
-    <div className="bg-gray-100 dark:bg-gray-900 h-screen overflow-hidden text-gray-900 dark:text-gray-100 transition-colors landscape:flex landscape:flex-col landscape:justify-center landscape:items-center">
-      {/* Toggle button: visible on mobile only */}
-      <button
-        onClick={() => setControlsVisible(v => !v)}
-        className="fixed top-4 left-4 z-50 p-2 bg-blue-600 text-white rounded-full md:hidden"
-      >
-        ☰
-      </button>
-
-      {/* Controls panel: mobile toggle, always visible on md+ */}
-      <div className={`${controlsVisible ? 'block' : 'hidden'} md:flex gap-4 p-4 sm:justify-center sm:items-center`}>
-        <Controls
-          theme={theme}
-          setTheme={setTheme}
-          muted={muted}
-          setMuted={setMuted}
-          onReset={reset}
-          onShowHelp={() => setShowHelp(true)}
-        />
+    <div className="
+      relative bg-gray-100 dark:bg-gray-900 
+      h-screen overflow-hidden 
+      text-gray-900 dark:text-gray-100
+      transition-colors
+    ">
+      {/* rotate hint in small-portrait */}
+      <div className="
+        absolute inset-0 z-50 
+        flex sm:hidden landscape:hidden 
+        items-center justify-center 
+        bg-black bg-opacity-75 
+        text-white text-center p-4
+      ">
+        Please rotate your device to landscape to play.
       </div>
 
-      {/* How to Play modal */}
+      {/* desktop (sm:) or landscape */}
+      <div className="hidden sm:flex landscape:flex flex-col h-screen">
+        {/* controls + fullscreen */}
+        <div className="flex justify-center items-center gap-4 p-4 w-full max-w-4xl mx-auto">
+          <Controls
+            theme={theme}
+            setTheme={setTheme}
+            muted={muted}
+            setMuted={setMuted}
+            onReset={reset}
+            onShowHelp={() => setShowHelp(true)}
+          />
+          <button
+            onClick={goFullscreen}
+            className="ml-2 p-2 bg-gray-600 dark:bg-gray-700 text-white rounded hover:bg-gray-500"
+            aria-label="Enter Fullscreen"
+          >
+            ⛶
+          </button>
+        </div>
+
+        {/* towers + moves */}
+        <div className="flex-1 flex flex-col justify-center items-center">
+          <main className="flex gap-x-8">
+            {["A", "B", "C"].map((t) => (
+              <Tower
+                key={t}
+                name={t}
+                discs={towers[t]}
+                onDrop={handleMove}
+                isSelected={false}
+              />
+            ))}
+          </main>
+          <div className="mt-4 text-lg text-gray-900 dark:text-white">
+            Moves: <strong>{moves}</strong>
+          </div>
+        </div>
+      </div>
+
       {showHelp && <HowToPlayModal onClose={() => setShowHelp(false)} />}
 
-      {/* Three towers */}
-      <main className="w-full px-4 mt-8 flex flex-row items-end justify-center gap-x-8">
-        {['A','B','C'].map(t => (
-          <Tower key={t} name={t} discs={towers[t]} onDrop={handleMove} />
-        ))}
-      </main>
-
-      {/* Footer */}
-      <footer className="text-center mt-8 pb-8 text-gray-900 dark:text-gray-100">
-        <div>Moves: <strong>{moves}</strong></div>
-        {feedback && (
-          <div className={`mt-2 ${feedback.startsWith('🎉') ? 'text-green-500' : 'text-red-400'}`}>{feedback}</div>
-        )}
-      </footer>
-
-      {/* Sounds */}
+      {/* sounds */}
       <audio id="drop" src="drop.wav" preload="auto" />
       <audio id="invalid" src="invalid.wav" preload="auto" />
       <audio id="win" src="win.wav" preload="auto" />

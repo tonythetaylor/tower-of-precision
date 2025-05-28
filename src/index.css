@@ -11,3 +11,16 @@ html, body, .tower, .disc {
   -webkit-touch-callout: none;
   user-select: none;
 }
+
+@layer base {
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    @media (orientation: landscape) {
+      html, body {
+        overflow: hidden;
+        height: 100vh;
+      }
+    }
+  }
