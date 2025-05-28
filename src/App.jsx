@@ -18,7 +18,8 @@ export default function App() {
     const hideAddressBar = () => window.scrollTo(0, 1);
     setTimeout(hideAddressBar, 200);
     window.addEventListener("orientationchange", hideAddressBar);
-    return () => window.removeEventListener("orientationchange", hideAddressBar);
+    return () =>
+      window.removeEventListener("orientationchange", hideAddressBar);
   }, []);
 
   // load / save theme
@@ -45,7 +46,10 @@ export default function App() {
   const play = (id) => {
     if (!muted) {
       const s = document.getElementById(id);
-      if (s) { s.currentTime = 0; s.play(); }
+      if (s) {
+        s.currentTime = 0;
+        s.play();
+      }
     }
   };
 
@@ -77,20 +81,24 @@ export default function App() {
   };
 
   return (
-    <div className="
+    <div
+      className="
       relative bg-gray-100 dark:bg-gray-900 
       h-screen overflow-hidden 
       text-gray-900 dark:text-gray-100
       transition-colors
-    ">
+    "
+    >
       {/* rotate hint in small-portrait */}
-      <div className="
+      <div
+        className="
         absolute inset-0 z-50 
         flex sm:hidden landscape:hidden 
         items-center justify-center 
         bg-black bg-opacity-75 
         text-white text-center p-4
-      ">
+      "
+      >
         Please rotate your device to landscape to play.
       </div>
 
@@ -105,14 +113,14 @@ export default function App() {
             setMuted={setMuted}
             onReset={reset}
             onShowHelp={() => setShowHelp(true)}
+            onFullscreen={() => {
+              if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+              } else {
+                document.exitFullscreen();
+              }
+            }}
           />
-          <button
-            onClick={goFullscreen}
-            className="ml-2 p-2 bg-gray-600 dark:bg-gray-700 text-white rounded hover:bg-gray-500"
-            aria-label="Enter Fullscreen"
-          >
-            ⛶
-          </button>
         </div>
 
         {/* towers + moves */}
