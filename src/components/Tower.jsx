@@ -10,7 +10,7 @@ export default function Tower({ name, discs, onDrop, isSelected }) {
     onDrop(from, name, size);
   };
 
-  // sort so smallest discs are first → bottom-up stacking
+  // Sort ascending so smallest (red) is at top of the stack
   const sorted = [...discs].sort((a, b) => a - b);
 
   return (
@@ -18,27 +18,26 @@ export default function Tower({ name, discs, onDrop, isSelected }) {
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
       className={
-        `relative flex flex-col justify-start items-center
-        w-full h-64
-        bg-gray-800 dark:bg-gray-800
-        border-4 ${isSelected ? 'border-yellow-400' : 'border-gray-700'}
-        rounded-lg shadow-lg p-3`
+        `relative flex flex-col items-center justify-start
+         w-full sm:max-w-xs md:max-w-sm h-64
+         bg-gray-800 dark:bg-gray-900 rounded-2xl
+         shadow-2xl shadow-black/50
+         transform transition-all duration-300
+         hover:-translate-y-2 hover:scale-105
+         ${isSelected ? 'ring-4 ring-yellow-400' : ''}
+         overflow-hidden`
       }
     >
-      {/* subtle full-background watermark letter */}
-      <span className="absolute top-2 right-2 text-xl font-bold text-white opacity-10 pointer-events-none">
+      {/* Translucent tower label */}
+      <span
+        className="pointer-events-none absolute inset-0 flex items-center justify-center
+                       text-7xl font-extrabold text-white opacity-10 select-none"
+      >
         {name}
       </span>
 
-      {/* vertical peg behind discs */}
-      <div
-        className="absolute bottom-3 left-1/2 transform -translate-x-1/2
-          w-2 h-4/5 bg-gray-600 dark:bg-gray-400
-          rounded-full z-0"
-      />
-
-      {/* stack discs bottom-up, above the peg */}
-      <div className="relative z-10 flex flex-col justify-end items-center w-full h-full space-y-2">
+      {/* Disc stack container, bottom-aligned */}
+      <div className="flex flex-col items-center justify-end w-full h-full space-y-1 px-2 pb-4">
         {sorted.map((size, i) => (
           <Disc key={i} tower={name} size={size} />
         ))}

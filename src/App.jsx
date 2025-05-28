@@ -14,10 +14,20 @@ export default function App() {
   const [feedback, setFeedback] = useState("");
   const [controlsVisible, setControlsVisible] = useState(false);
 
+  // Initialize theme from localStorage
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    // Prevent overscroll bounce on mobile
-    document.documentElement.style.overscrollBehavior = "none";
+    const saved = localStorage.getItem('theme');
+    if (saved === 'light' || saved === 'dark') {
+      setTheme(saved);
+    }
+  }, []);
+
+  // Apply theme class to <html>
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.remove('light', 'dark');
+    root.classList.add(theme);
+    localStorage.setItem('theme', theme);
   }, [theme]);
 
   const play = (id) => {
@@ -41,7 +51,7 @@ export default function App() {
       src.pop();
       dst.push(size);
       setTowers({ ...towers, [from]: src, [to]: dst });
-      setMoves((m) => m + 1);
+      setMoves(m => m + 1);
       play("drop");
       setFeedback("");
       if (to === "C" && dst.length === INITIAL.length) {
@@ -49,29 +59,23 @@ export default function App() {
         play("win");
       }
     } else {
-      setFeedback("❌ Invalid move!");
+      setFeedback('❌ Invalid move!');
       play("invalid");
     }
   };
 
   return (
     <div className="bg-gray-100 dark:bg-gray-900 h-screen overflow-hidden text-gray-900 dark:text-gray-100 transition-colors landscape:flex landscape:flex-col landscape:justify-center landscape:items-center">
-      {/* Toggle button in landscape only */}
+      {/* Toggle button: visible on mobile only */}
       <button
-        onClick={() => setControlsVisible((v) => !v)}
-        className="fixed top-4 left-4 z-50 p-2 bg-blue-600 text-white rounded-full landscape:block hidden"
+        onClick={() => setControlsVisible(v => !v)}
+        className="fixed top-4 left-4 z-50 p-2 bg-blue-600 text-white rounded-full md:hidden"
       >
         ☰
       </button>
 
-      {/* Controls + feedback */}
-      <div
-        className={
-          `gap-4 p-4
-           sm:flex sm:justify-center sm:items-center
-           ${controlsVisible ? "landscape:flex" : "landscape:hidden"}`
-        }
-      >
+      {/* Controls panel: mobile toggle, always visible on md+ */}
+      <div className={`${controlsVisible ? 'block' : 'hidden'} md:flex gap-4 p-4 sm:justify-center sm:items-center`}>
         <Controls
           theme={theme}
           setTheme={setTheme}
@@ -80,30 +84,24 @@ export default function App() {
           onReset={reset}
           onShowHelp={() => setShowHelp(true)}
         />
-        {feedback && (
-          <div className="fixed top-4 right-4 bg-green-600 text-white px-3 py-1 rounded-lg shadow-lg">
-            {feedback}
-          </div>
-        )}
       </div>
 
       {/* How to Play modal */}
       {showHelp && <HowToPlayModal onClose={() => setShowHelp(false)} />}
 
-      {/* Three towers, always centered */}
+      {/* Three towers */}
       <main className="w-full px-4 mt-8 flex flex-row items-end justify-center gap-x-8">
-        {['A','B','C'].map((t) => (
+        {['A','B','C'].map(t => (
           <Tower key={t} name={t} discs={towers[t]} onDrop={handleMove} />
         ))}
       </main>
 
       {/* Footer */}
-      <footer className={
-        `text-center mt-8 pb-8 text-gray-900 dark:text-gray-100
-         sm:block
-         ${controlsVisible ? "landscape:block" : "landscape:hidden"}`
-      }>
-        Moves: <strong>{moves}</strong>
+      <footer className="text-center mt-8 pb-8 text-gray-900 dark:text-gray-100">
+        <div>Moves: <strong>{moves}</strong></div>
+        {feedback && (
+          <div className={`mt-2 ${feedback.startsWith('🎉') ? 'text-green-500' : 'text-red-400'}`}>{feedback}</div>
+        )}
       </footer>
 
       {/* Sounds */}

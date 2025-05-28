@@ -2,13 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* your custom rules… */
 html, body, .tower, .disc {
-    overscroll-behavior: none;
-    touch-action: manipulation;
-  }
-
-  /* optional: no text-selection on long-press */
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
 * {
-    -webkit-touch-callout: none;
-    user-select: none;
-  }
+  -webkit-touch-callout: none;
+  user-select: none;
+}
