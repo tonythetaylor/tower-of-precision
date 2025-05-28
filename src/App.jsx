@@ -107,9 +107,9 @@ export default function App() {
       </footer>
 
       {/* Sounds */}
-      <audio id="drop" src="/drop.wav" preload="auto" />
-      <audio id="invalid" src="/invalid.wav" preload="auto" />
-      <audio id="win" src="/win.wav" preload="auto" />
+      <audio id="drop" src="drop.wav" preload="auto" />
+      <audio id="invalid" src="invalid.wav" preload="auto" />
+      <audio id="win" src="win.wav" preload="auto" />
     </div>
   );
 }
